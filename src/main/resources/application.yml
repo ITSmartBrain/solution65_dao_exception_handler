@@ -11,6 +11,6 @@ spring:
     hibernate:
         ddl-auto: update
 #    если хотите указать свою схему
-#    properties:
-#      hibernate:
-#        default_schema: spring3
+    properties:
+      hibernate:
+        default_schema: spring4

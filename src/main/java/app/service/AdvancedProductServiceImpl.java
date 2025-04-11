@@ -1,12 +1,11 @@
 package app.service;
+
 import app.domain.Product;
 import app.domain.ProductRepository;
-import app.dto.ProductOperationResponseDto;
 import app.dto.ProductRequestDto;
 import app.dto.ProductResponseDto;
 import app.exception.InsufficientQuantityException;
 import app.exception.ProductNotFoundException;
-import app.exception.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -79,58 +78,10 @@ public class AdvancedProductServiceImpl implements ProductService {
         return convertToDto(updatedProduct);
     }
 
-    @Transactional
-    public ProductOperationResponseDto restock(Long id, Integer quantity) {
-        if (quantity <= 0) {
-            throw new ValidationException("Restock quantity must be positive");
-        }
-
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException(id));
-
-        product.setQuantity(product.getQuantity() + quantity);
-        Product updatedProduct = productRepository.save(product);
-
-        return createOperationResponse(updatedProduct, quantity, "RESTOCK");
-    }
-
-    @Transactional
-    public ProductOperationResponseDto sell(Long id, Integer quantity) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException(id));
-
-        if (product.getQuantity() < quantity) {
-            throw new InsufficientQuantityException(
-                    product.getName(),
-                    product.getQuantity(),
-                    quantity
-            );
-        }
-
-        product.setQuantity(product.getQuantity() - quantity);
-        Product updatedProduct = productRepository.save(product);
-
-        return createOperationResponse(updatedProduct, quantity, "SELL");
-    }
-
-    public List<ProductResponseDto> findByCategory(String category) {
-        return productRepository.findByCategory(category).stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
-    }
-
     private ProductResponseDto convertToDto(Product product) {
         ProductResponseDto dto = modelMapper.map(product, ProductResponseDto.class);
         dto.setInStock(product.getQuantity() > 0);
         return dto;
     }
 
-    private ProductOperationResponseDto createOperationResponse(Product product, Integer quantity, String operationType) {
-        ProductOperationResponseDto response = new ProductOperationResponseDto();
-        response.setProductId(product.getId());
-        response.setProductName(product.getName());
-        response.setNewQuantity(product.getQuantity());
-        response.setOperationType(operationType);
-        return response;
-    }
 }

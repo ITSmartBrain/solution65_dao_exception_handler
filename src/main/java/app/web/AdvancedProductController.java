@@ -1,11 +1,18 @@
 package app.web;
-import app.dto.ProductOperationResponseDto;
+
 import app.dto.ProductRequestDto;
 import app.dto.ProductResponseDto;
-import app.service.AdvancedProductServiceImpl;
+import app.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
@@ -15,21 +22,22 @@ import java.util.List;
 @RequestMapping("/api/advanced/products")
 @RequiredArgsConstructor
 public class AdvancedProductController {
-    private final AdvancedProductServiceImpl productService;
+
+    private final ProductService advancedProductService;
 
     @GetMapping
     public ResponseEntity<List<ProductResponseDto>> getAllProducts() {
-        return ResponseEntity.ok(productService.findAll());
+        return ResponseEntity.ok(advancedProductService.findAll());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDto> getProductById(@PathVariable Long id) {
-        return ResponseEntity.ok(productService.findById(id));
+        return ResponseEntity.ok(advancedProductService.findById(id));
     }
 
     @PostMapping
     public ResponseEntity<ProductResponseDto> createProduct(@RequestBody ProductRequestDto requestDto) {
-        ProductResponseDto createdProduct = productService.save(requestDto);
+        ProductResponseDto createdProduct = advancedProductService.save(requestDto);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
@@ -43,32 +51,13 @@ public class AdvancedProductController {
     public ResponseEntity<ProductResponseDto> updateProduct(
             @PathVariable Long id,
             @RequestBody ProductRequestDto requestDto) {
-        return ResponseEntity.ok(productService.update(id, requestDto));
+        return ResponseEntity.ok(advancedProductService.update(id, requestDto));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
-        productService.deleteById(id);
+        advancedProductService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{id}/restock")
-    public ResponseEntity<ProductOperationResponseDto> restockProduct(
-            @PathVariable Long id,
-            @RequestParam Integer quantity) {
-        return ResponseEntity.ok(productService.restock(id, quantity));
-    }
-
-    @PostMapping("/{id}/sell")
-    public ResponseEntity<ProductOperationResponseDto> sellProduct(
-            @PathVariable Long id,
-            @RequestParam Integer quantity) {
-        return ResponseEntity.ok(productService.sell(id, quantity));
-    }
-
-    @GetMapping("/category/{category}")
-    public ResponseEntity<List<ProductResponseDto>> getProductsByCategory(
-            @PathVariable String category) {
-        return ResponseEntity.ok(productService.findByCategory(category));
-    }
 }
